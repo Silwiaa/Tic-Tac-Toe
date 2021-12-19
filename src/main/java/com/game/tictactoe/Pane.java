@@ -46,7 +46,6 @@ public class Pane extends StackPane {
         setOnMouseClicked(event -> {
             mouseButton = event.getButton();
             if (mouseButton == MouseButton.PRIMARY) {
-
                 //Checks if xButton or oButton have been chosen
                 if (Choice.userChoiceList.size() > 0) {
                     userChoise = Choice.userChoiceList.get(0);
