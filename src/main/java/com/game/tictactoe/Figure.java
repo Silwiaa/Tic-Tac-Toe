@@ -1,41 +1,50 @@
 package com.game.tictactoe;
 
+import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 
-import java.util.ArrayList;
-import java.util.List;
-
 public class Figure {
-    private String name;
-    private boolean ifIsUserFigure;
-    public static List<Figure> playerFigures = new ArrayList<>();
-    public static List<Figure> computerFigures = new ArrayList<>();
-    private int position;
+    private char choisenFigure;
+    private Image cross = new Image("file:src/main/resources/x.png");
+    private Image circle = new Image("file:src/main/resources/zero.png");
+    private ImageView img;
+    public static Image finishCross = new Image("file:src/main/resources/finish.png");
+    public static Image finishCircle = new Image("file:src/main/resources/finishzero.png");
+    public static ImageView finishImg;
 
-    public Figure(String name, int position) {
-        this.name = name;
-        this.position = position;
+    public Figure(char choisenFigure) {
+        this.choisenFigure = choisenFigure;
     }
 
-    public String getName() {
-        return name;
+    public Character getChoisenFigure() {
+        return choisenFigure;
     }
 
-    public int getPosition() {
-        return position;
+    //Changes figure in winning line
+    public static ImageView createFinishFigure(char figure) {
+        if(figure == 'x') {
+            finishImg = new ImageView(finishCross);
+            finishImg.setFitHeight(50.0);
+            finishImg.setFitWidth(50.0);
+            return finishImg;
+        } else {
+            finishImg = new ImageView(finishCircle);
+            finishImg.setFitHeight(50.0);
+            finishImg.setFitWidth(50.0);
+            return finishImg;
+        }
     }
 
-    public ImageView createFigure(String choosenFigure) {
-        if(choosenFigure == "x") {
-            Image imageback = new Image("file:src/main/resources/x.png");
-            ImageView img = new ImageView(imageback);
+    //Returns proper figure image depending on chosen figure
+    public ImageView createFigure() {
+        if(getChoisenFigure() == 'x') {
+            img = new ImageView(cross);
             img.setFitHeight(50.0);
             img.setFitWidth(50.0);
             return img;
         } else {
-            Image imageback = new Image("file:src/main/resources/zero.png");
-            ImageView img = new ImageView(imageback);
+            img = new ImageView(circle);
             img.setFitHeight(50.0);
             img.setFitWidth(50.0);
             return img;

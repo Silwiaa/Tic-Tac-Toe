@@ -1,21 +1,58 @@
 package com.game.tictactoe;
 
-import javafx.scene.layout.ColumnConstraints;
-import javafx.scene.layout.GridPane;
-import javafx.scene.layout.RowConstraints;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.scene.layout.*;
+import javafx.scene.paint.Color;
+import javafx.scene.text.Font;
 
 public class Board {
 
-    public GridPane createBoard() {
-        GridPane grid = new GridPane();
+    private BorderPane root = new BorderPane();
+    private GridPane topGrid = new GridPane();
+    private GridPane grid = new GridPane();
+    private GridPane bottomGrid = new GridPane();
+    private Image imageback = new Image("file:src/main/resources/tlo.jpg");
+    private BackgroundSize backgroundSize = new BackgroundSize(910, 610, true, true, true, true);
+    private BackgroundImage backgroundImage = new BackgroundImage(imageback, BackgroundRepeat.NO_REPEAT, BackgroundRepeat.NO_REPEAT, BackgroundPosition.CENTER, backgroundSize);
+    private Background background = new Background(backgroundImage);
+    private ColumnConstraints column = new ColumnConstraints(100);
+    private RowConstraints row = new RowConstraints(100);
+    private Button xButton = new Button();
+    private Button oButton = new Button();
+    private Label chooseLbl = new Label("Choose your figure");
+    public static Label startLbl = new Label("Start the game by click on the board or choose your figure");
+    public static Button restartBtn = new Button();
 
-       for (int i = 0; i < 3; i++) {
-            ColumnConstraints column = new ColumnConstraints(100);
+    public BorderPane createBoard() {
+
+        //Set font and other formating for created grids
+        formatingGrid(topGrid);
+        formatingGrid(grid);
+        formatingGrid(bottomGrid);
+
+        //Add children to topGrid
+        restartBtn.setText("  RESTART  ");
+        restartBtn.setDisable(true);
+        formatingGridLabels(startLbl);
+
+        topGrid.setVgap(10.0);
+        topGrid.setHgap(10.0);
+
+        topGrid.add(startLbl, 0, 0, 4, 1);
+        topGrid.add(restartBtn, 5, 0, 2, 1);
+
+        //Add children to middle grid
+        for (int i = 0; i < 3; i++) {
             grid.getColumnConstraints().add(column);
         }
 
         for (int i = 0; i < 3; i++) {
-            RowConstraints row = new RowConstraints(100);
             grid.getRowConstraints().add(row);
         }
 
@@ -28,15 +65,155 @@ public class Board {
                 count++;
             }
         }
-
+        //Create border for children of middle grid
         Pane.createPanesBorder();
-        return grid;
+
+        //Add children to bottomGrid
+        xButton.setText("    X    ");
+        oButton.setText("    O    ");
+        formatingGridLabels(chooseLbl);
+        bottomGrid.setVgap(10.0);
+        bottomGrid.setHgap(10.0);
+
+        bottomGrid.add(xButton, 0, 0, 4, 1);
+        bottomGrid.add(chooseLbl, 5, 0, 8, 1);
+        bottomGrid.add(oButton, 14, 0, 4, 1);
+
+        //Set on anction buttons events
+        onClickButtonsEvent(oButton);
+        onClickButtonsEvent(xButton);
+        onClickButtonsEvent(restartBtn);
+
+        //Add grids for the main Border Pane
+        root.setTop(topGrid);
+        root.setCenter(grid);
+        root.setBottom(bottomGrid);
+
+        return root;
     }
 
-    static void clearAllLists() {
-        Figure.playerFigures.clear();
-        Move.allMoves.clear();
-        Move.userMoves.clear();
-        Move.computerMoves.clear();
+
+   private void formatingGrid(GridPane gridToDecorate) {
+       gridToDecorate.setBackground(new Background(new BackgroundFill(Color.web("#446C9D"), new CornerRadii(0), new Insets(0))));
+       gridToDecorate.setPadding(new Insets(30));
+       gridToDecorate.setAlignment(Pos.CENTER);
+       if (gridToDecorate == grid) {
+           grid.setBackground(background);
+       }
+   }
+
+   private void formatingGridLabels(Label label) {
+       label.setTextFill(Color.web("#FFF"));
+       label.setFont(new Font("Roboto", 18));
+       label.setPadding(new Insets(2));
+   }
+
+   private void onClickButtonsEvent(Button button) {
+        button.setOnAction(event -> {
+            clearData();
+            if (button == oButton) {
+                Choice.userChoiceList.clear();
+                Choice.userChoiceList.add('o');
+                try {
+                    Move.checkIfIsUserTurn('o');
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            } else {
+                Choice.userChoiceList.clear();
+                Choice.userChoiceList.add('x');
+            }
+        });
+   }
+
+   public void clearData() {
+        Move.ticTacToeArr = new char[3][3];
+        Move.occupiedPanesPositionsList.clear();
+        for (Pane pane : Pane.panesList) {
+           pane.getChildren().clear();
+       }
+   }
+
+    public static void endGame(char whoHasWon) {
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle("End of the game");
+        String winner = "";
+        if(whoHasWon !='c') {
+            if (whoHasWon == 'x') {
+                winner = "Cross";
+            } else {
+                winner = "Circle";
+            }
+            alert.setContentText(winner + " has won the game");
+        } else {
+            alert.setContentText("Game over - nobody wins");
+        }
+        alert.show();
+        restartBtn.setDisable(false);
+        startLbl.setText("Restart or choose your figure to play again");
+    }
+
+    public static void printResultOnBoard(int position, char figure) {
+        ImageView img1;
+        ImageView img2;
+        ImageView img3;
+        img1 = Figure.createFinishFigure(figure);
+        img2 = Figure.createFinishFigure(figure);
+        img3 = Figure.createFinishFigure(figure);
+
+        int x = 0;
+        int y = 0;
+        int z = 0;
+
+        switch (position) {
+            case 0:
+                x = 0;
+                y = 3;
+                z = 6;
+                break;
+            case 1:
+                x = 1;
+                y = 4;
+                z = 7;
+                break;
+            case 2:
+                x = 2;
+                y = 5;
+                z = 8;
+                break;
+            case 3:
+                x = 0;
+                y = 1;
+                z = 2;
+                break;
+            case 4:
+                x = 3;
+                y = 4;
+                z = 5;
+                break;
+            case 5:
+                x = 6;
+                y = 7;
+                z = 8;
+                break;
+            case 6:
+                x = 0;
+                y = 4;
+                z = 8;
+                break;
+            case 7:
+                x = 6;
+                y = 4;
+                z = 2;
+                break;
+        }
+        Pane.panesList.get(x).getChildren().clear();
+        Pane.panesList.get(x).getChildren().add(img1);
+
+        Pane.panesList.get(y).getChildren().clear();
+        Pane.panesList.get(y).getChildren().add(img2);
+
+        Pane.panesList.get(z).getChildren().clear();
+        Pane.panesList.get(z).getChildren().add(img3);
     }
 }
