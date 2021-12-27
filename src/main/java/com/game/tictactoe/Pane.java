@@ -1,22 +1,19 @@
 package com.game.tictactoe;
 
-import javafx.collections.ObservableList;
-import javafx.scene.Node;
 import javafx.scene.control.Alert;
-import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseButton;
 import javafx.scene.layout.StackPane;
-
 import java.util.*;
 
 public class Pane extends StackPane {
-    public static List<Pane> panesList = new ArrayList<>();
-    private int paneNumber;
+    private final int paneNumber;
     private MouseButton mouseButton;
-    private char userChoise;
-    private char computerFigure;
     private int position;
-    private ImageView img;
+    private boolean checkIfIsFree;
+    public static char userChoice;
+    private boolean isUserTurn;
+    public static List<Pane> panesList = new ArrayList<>();
+    public static char computerFigure;
 
     public Pane(int paneNumber) {
         this.paneNumber = paneNumber;
@@ -28,7 +25,7 @@ public class Pane extends StackPane {
     }
 
     public static void createPanesBorder() {
-        panesList.get(0).setStyle("-fx-border-color: #446C9D;" + "-fx-border-width: 0 2 0 0;");
+        panesList.get(0).setStyle("-fx-border-color: #446C9D;-fx-border-width: 0 2 0 0;");
         panesList.get(1).setStyle("-fx-border-color: #446C9D;" + "-fx-border-width: 2 2 0 0;");
         panesList.get(2).setStyle("-fx-border-color: #446C9D;" + "-fx-border-width: 2 2 0 0;");
         panesList.get(3).setStyle("-fx-border-color: #446C9D;" + "-fx-border-width: 0 2 0 0;");
@@ -40,72 +37,68 @@ public class Pane extends StackPane {
     }
 
     public void onClickPane() {
-        //When pane clicked checks user figure. Default user figure is cross.
-        //On clicking xButton or oButton - user figure is changed depends on clicked button.
-        //Cross starts.
         setOnMouseClicked(event -> {
             mouseButton = event.getButton();
             if (mouseButton == MouseButton.PRIMARY) {
-                //Checks if xButton or oButton have been chosen
-                if (Choice.userChoiceList.size() > 0) {
-                    userChoise = Choice.userChoiceList.get(0);
-                } else {
-                    userChoise = 'x';
+
+                //Make bet on start the game
+                if (Move.occupiedPanesPositionsList.size() == 0) {
+                    Board.setDisableForButtons();
+                    Credits.makeNewBet(50);
                 }
 
-                if (userChoise == 'x') {
-                    computerFigure = 'o';
-                } else {
-                    computerFigure = 'x';
-                }
                 //Check position of clicked pane
                 position = getPanelNumber();
+                isUserTurn = true;
+
+                //Check user figure. Cross starts
+                userChoice = checkUserFigureChoice();
+                if (userChoice != 'x' && Move.occupiedPanesPositionsList.size() == 0) {
+                    isUserTurn = false;
+                }
 
                 //Check if user picked up not taken pane
-                boolean checkIfIsFree = checkIfPaneIsOccupied(position);
+                checkIfIsFree = checkIfPaneIsOccupied(position);
 
-                if (checkIfIsFree) {
+                if (checkIfIsFree && isUserTurn) {
                     //If picked up pane is free - make user move
-                    Move.userMove(userChoise, position);
+                    Move.userMove(userChoice, position);
 
-                    //Create user figure and add it as children of clicked pane
-                    Figure userFigure = new Figure(userChoise);
-                    img = userFigure.createFigure();
-                    getChildren().add(img);
                 } else {
                     return;
                 }
 
-                //Check if after user move game can be continued. If check winner is c - game can be continued.
-                char checkWinner = Move.checkWinner();
+                //Check if after user move there is a winner.
+                String checkWinner = Move.checkWinner();
 
                 //Check if computer can make a move (if total moves is less than 9 and there is no winner - computer moves)
-                if (Move.occupiedPanesPositionsList.size() < 9 && checkWinner == 'c') {
-                    int computerChoise = Move.computerMove(computerFigure);
-                    Figure computerfigure = new Figure(computerFigure);
-                    img = computerfigure.createFigure();
-                    Pane.panesList.get(computerChoise).getChildren().add(img);
+                if (checkWinner.equals("continue")) {
+                    Move.computerMove(computerFigure);
 
-                    checkWinner = Move.checkWinner();
-
-                    //Check if computer move was the last of possible moves. If yes - and there is no winner - game over
-                    if(checkWinner == 'c' && Move.occupiedPanesPositionsList.size() == 9) {
-                        Board.endGame(checkWinner);
-                    }
-                } else {
-                    Board.endGame(checkWinner);
-                }
-
-                //After user and computer moves check again if there is winner. If yes - end game and show winner
-                checkWinner = Move.checkWinner();
-                if(checkWinner != 'c') {
-                    Board.endGame(checkWinner);
+                    //Check if after computer move there is a winner.
+                    Move.checkWinner();
                 }
             }
         });
     }
 
+    public static char checkUserFigureChoice() {
+        //Checks user figure choice. If not chosen - cross is default.
+        if (Choice.userChoiceList.size() > 0) {
+            userChoice = Choice.userChoiceList.get(0);
+            computerFigure = 'x';
+        } else {
+            userChoice = 'x';
+            Choice.userChoiceList.add(userChoice);
+        }
+        if (userChoice == 'x') {
+            computerFigure = 'o';
+        }
+        return userChoice;
+    }
+
     public boolean checkIfPaneIsOccupied(int passedPosition) {
+
         //Checks if user haven't used the same pane twice. If yes - show alert
         for (int i : Move.occupiedPanesPositionsList) {
             if(i == passedPosition) {

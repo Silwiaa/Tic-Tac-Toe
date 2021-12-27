@@ -6,33 +6,26 @@ import java.util.*;
 public class Move {
     public static char[][] ticTacToeArr = new char[3][3];
     public static List<Integer> occupiedPanesPositionsList = new ArrayList<>();
+    public static ImageView img;
+    public static Figure userFigure;
+    public static List<Integer> computerPossibleChoices;
 
-    public static void checkIfIsUserTurn(char userChoise) throws InterruptedException {
-        //If user had been chosen to start with circle figure - computer will start the game
-        if(userChoise == 'x') {
-            return;
-
-        } else {
-            int computerChoice = Move.computerMove('x');
-            Figure computerfigure = new Figure('x');
-            ImageView img = computerfigure.createFigure();
-            Thread.sleep(500);
-            Pane.panesList.get(computerChoice).getChildren().add(img);
-            return;
-        }
-    }
-
-    public static void userMove(char userChoise, int position) {
+    public static void userMove(char userChoice, int position) {
         //Add user choice to array
-        fillTicTacToeArr(position, userChoise);
+        fillTicTacToeArr(position, userChoice);
 
         //Add user choice to the list of occupied panes
         addPositionToOccupiedPanesPositionsList(position);
+
+        //Create user figure and add it as children of clicked pane
+        userFigure = new Figure(userChoice);
+        img = userFigure.createFigure();
+        Pane.panesList.get(position).getChildren().add(img);
     }
 
     public static int computerMove(char computerFigure) {
         //Possible move choices for computer
-        List<Integer> computerPossibleChoices = new ArrayList<>(Arrays.asList(0, 1, 2, 3, 4, 5, 6, 7, 8));
+        computerPossibleChoices = new ArrayList<>(Arrays.asList(0, 1, 2, 3, 4, 5, 6, 7, 8));
 
         //Remove taken positions from possible choices of move
         computerPossibleChoices.removeAll(occupiedPanesPositionsList);
@@ -48,10 +41,15 @@ public class Move {
         //Add computer choice to the list of occupied panes
         addPositionToOccupiedPanesPositionsList(computerPosition);
 
+        //Create computer figure and add it as children of picked up by computer pane
+        Figure compFigure = new Figure(computerFigure);
+        img = compFigure.createFigure();
+        Pane.panesList.get(computerPosition).getChildren().add(img);
+
         return computerPosition;
     }
 
-    //Add chosen figure to the array depends on chosen pane position
+    //Add chosen figure to the array depends on chosen pane position on the list pane
     public static void fillTicTacToeArr(int pasedPosition, char figure) {
         if (pasedPosition == 0) {
             ticTacToeArr[0][0] = figure;
@@ -80,7 +78,8 @@ public class Move {
         if (pasedPosition == 8) {
             ticTacToeArr[2][2] = figure;
         }
-        arrInfo();
+        //Print an array on the console
+        //arrInfo();
     }
 
     //Print array in console
@@ -96,8 +95,8 @@ public class Move {
         occupiedPanesPositionsList.add(passedPosition);
     }
 
-    //Winner occurs if in one line (horizontal, vertical or diagonal) there is the same figure (circle or cross)
-    public static char checkWinner() {
+    //Winner occurs if in one line (horizontal, vertical or diagonal) there is tree the same figure (circle or cross)
+    public static String checkWinner() {
         for (int i = 0; i < 8; i++) {
             String line = null;
 
@@ -127,21 +126,26 @@ public class Move {
                     line = "" + ticTacToeArr[0][2] + ticTacToeArr[1][1] + ticTacToeArr[2][0];
                     break;
             }
-            //For X winner
+
+            //For cross is a winner
             if (line.equals("xxx")) {
-                System.out.println("Cross won");
-                Board.printResultOnBoard(i, 'x');
-                return 'x';
+                Board.endRound('x', i);
+                System.out.println(3);
+                return "x";
             }
 
-            // For O winner
+            //For circle is a winner
             else if (line.equals("ooo")) {
-                System.out.println("Circle won");
-                System.out.println("Line number: " + i);
-                Board.printResultOnBoard(i, 'o');
-                return 'o';
+                Board.endRound('o', i);
+                return "o";
             }
         }
-        return 'c';
+
+        if(Move.occupiedPanesPositionsList.size() == 9) {
+            Board.endRound('e', 0);
+            return "game over";
+        }
+
+        return "continue";
     }
 }

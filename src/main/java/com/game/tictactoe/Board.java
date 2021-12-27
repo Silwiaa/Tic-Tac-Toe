@@ -2,10 +2,7 @@ package com.game.tictactoe;
 
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
-import javafx.scene.control.Alert;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
@@ -15,40 +12,47 @@ import javafx.scene.text.Font;
 public class Board {
 
     private BorderPane root = new BorderPane();
+
     private GridPane rightGrid = new GridPane();
     private GridPane topGrid = new GridPane();
-    private GridPane grid = new GridPane();
+    public static GridPane grid = new GridPane();
     private GridPane bottomGrid = new GridPane();
-
-    private Image imageback = new Image("file:src/main/resources/tlo.jpg");
-    private BackgroundSize backgroundSize = new BackgroundSize(910, 610, true, true, true, true);
-    private BackgroundImage backgroundImage = new BackgroundImage(imageback, BackgroundRepeat.NO_REPEAT, BackgroundRepeat.NO_REPEAT, BackgroundPosition.CENTER, backgroundSize);
-    private Background background = new Background(backgroundImage);
 
     private ColumnConstraints column = new ColumnConstraints(100);
     private RowConstraints row = new RowConstraints(100);
 
-    private Label computerCredits = new Label("Computer credits:");
-    private Label playerCredits = new Label("Player credits:");
-    private Label playerBet = new Label("Choose your bet value:");
-    public static Button confirmBetBtn = new Button();
     public static TextField playerBetValue = new TextField();
     public static TextField computerCreditsValue = new TextField();
     public static TextField playerCreditsValue = new TextField();
 
-    private Button xButton = new Button();
-    private Button oButton = new Button();
+    public static Button confirmBetBtn = new Button();
+    public static Button xButton = new Button();
+    public static Button oButton = new Button();
+    public static Button restartBtn = new Button();
+    public static Button continueBtn = new Button();
+
+    public static Label computerCredits = new Label("Computer credits:");
+    public static Label playerCredits = new Label("Player credits:");
+    public static Label playerBet = new Label("");
     private Label chooseLbl = new Label("Choose your figure:");
     public static Label startLbl = new Label("Start the game by click on the board or choose your figure:");
-    public static Button restartBtn = new Button();
+
+    private Image imageback = new Image("file:src/main/resources/tlo.jpg");
+    private BackgroundSize backgroundSize = new BackgroundSize(
+            910, 610, true, true, true, true);
+    private BackgroundImage backgroundImage = new BackgroundImage(
+            imageback, BackgroundRepeat.NO_REPEAT, BackgroundRepeat.NO_REPEAT, BackgroundPosition.CENTER, backgroundSize);
+    private Background background = new Background(backgroundImage);
+
+    public static boolean gameStage = true;
 
     public BorderPane createBoard() {
 
         //Set font and other formatting for created grids
-        formatingGrid(rightGrid);
-        formatingGrid(topGrid);
-        formatingGrid(grid);
-        formatingGrid(bottomGrid);
+        formattingGrid(rightGrid);
+        formattingGrid(topGrid);
+        formattingGrid(grid);
+        formattingGrid(bottomGrid);
 
         ////Add children to rightGrid
         rightGrid.setVgap(10.0);
@@ -56,8 +60,8 @@ public class Board {
 
         xButton.setText("    X    ");
         oButton.setText("    O    ");
-        formatingGridLabels(startLbl);
-        formatingGridLabels(chooseLbl);
+        formattingGridLabels(startLbl);
+        formattingGridLabels(chooseLbl);
 
         rightGrid.add(chooseLbl, 0, 0, 10, 1);
         rightGrid.add(xButton, 5, 1, 2, 1);
@@ -66,16 +70,15 @@ public class Board {
         //Add children to topGrid
         topGrid.setVgap(10.0);
         topGrid.setHgap(10.0);
-        formatingGridLabels(computerCredits);
-        formatingGridLabels(playerCredits);
-        formatingGridLabels(playerBet);
+        formattingGridLabels(computerCredits);
+        formattingGridLabels(playerCredits);
+        formattingGridLabels(playerBet);
 
-        playerCreditsValue.setText("1000");
+        confirmBetBtn.setText("CONFIRM BET");
+
         playerCreditsValue.setDisable(true);
-        computerCreditsValue.setText("1000");
         computerCreditsValue.setDisable(true);
         playerBetValue.setDisable(true);
-        confirmBetBtn.setText("CONFIRM BET");
         confirmBetBtn.setDisable(true);
 
         topGrid.add(computerCredits, 0, 0, 4, 1);
@@ -87,6 +90,8 @@ public class Board {
         topGrid.add(playerBet, 0, 2, 4, 1);
         topGrid.add(playerBetValue, 5, 2, 2, 1);
         topGrid.add(confirmBetBtn, 8, 2, 4, 1);
+
+        Credits.setStartCreditsValue();
 
         //Add children to middle grid
         for (int i = 0; i < 3; i++) {
@@ -106,6 +111,7 @@ public class Board {
                 count++;
             }
         }
+
         //Create border for children of middle grid
         Pane.createPanesBorder();
 
@@ -113,17 +119,22 @@ public class Board {
         restartBtn.setText("  RESTART  ");
         restartBtn.setDisable(true);
 
+        continueBtn.setText("  CONTINUE  ");
+        continueBtn.setDisable(true);
+
         bottomGrid.setVgap(10.0);
         bottomGrid.setHgap(10.0);
 
         bottomGrid.add(startLbl, 0, 1, 10, 1);
         bottomGrid.add(restartBtn, 11, 1, 4, 1);
+        bottomGrid.add(continueBtn, 16, 1, 4, 1);
 
-        //Set on anction buttons events
-        onClickButtonsEvent(oButton);
-        onClickButtonsEvent(xButton);
-        onClickButtonsEvent(restartBtn);
-        onClickButtonsEvent(confirmBetBtn);
+        //Set on action buttons events
+        onClickFiguresButtons(oButton);
+        onClickFiguresButtons(xButton);
+        onClickRestartButton(restartBtn);
+        onClickConfirmBetBtn(confirmBetBtn);
+        onClickContinueButton(continueBtn);
 
         //Add grids for the main Border Pane
         root.setTop(topGrid);
@@ -134,9 +145,9 @@ public class Board {
         return root;
     }
 
-
-   private void formatingGrid(GridPane gridToDecorate) {
-        gridToDecorate.setBackground(new Background(new BackgroundFill(Color.web("#446C9D"), new CornerRadii(0), new Insets(0))));
+   private void formattingGrid(GridPane gridToDecorate) {
+        gridToDecorate.setBackground(new Background(
+                new BackgroundFill(Color.web("#446C9D"), new CornerRadii(0), new Insets(0))));
         gridToDecorate.setPadding(new Insets(30));
         gridToDecorate.setAlignment(Pos.CENTER);
 
@@ -145,46 +156,79 @@ public class Board {
         }
    }
 
-   private void formatingGridLabels(Label label) {
+   private void formattingGridLabels(Label label) {
        label.setTextFill(Color.web("#FFF"));
        label.setFont(new Font("Roboto", 18));
        label.setPadding(new Insets(2));
    }
 
-   private void onClickButtonsEvent(Button button) {
+    private void onClickFiguresButtons(Button button) {
         button.setOnAction(event -> {
-            if(button != confirmBetBtn) {
-                clearData();
-                if (button == oButton) {
-                    Choice.userChoiceList.clear();
-                    Choice.userChoiceList.add('o');
-                    try {
-                        Move.checkIfIsUserTurn('o');
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                } else {
-                    Choice.userChoiceList.clear();
-                    Choice.userChoiceList.add('x');
-                    restartBtn.setDisable(true);
-                    startLbl.setText("Start the game by click on the board or choose your figure");
-                }
+            clearData();
+            Choice.userChoiceList.clear();
+            setDisableForButtons();
+            startLbl.setText("");
 
+            if (button.equals(oButton)) {
+                Credits.makeNewBet(50);
+                Choice.userChoiceList.add('o');
+                Move.computerMove('x');
             } else {
-                int playerCredits = Integer.parseInt(Board.playerCreditsValue.getText());
-                int computerCredits = Integer.parseInt(Board.computerCreditsValue.getText());
-                int playerBetValueInt = Integer.parseInt(Board.playerBetValue.getText());
-                playerCredits -= playerBetValueInt;
-                computerCredits -= playerBetValueInt;
-                Board.computerCreditsValue.setText(Integer.toString(computerCredits));
-                Board.playerCreditsValue.setText(Integer.toString(playerCredits));
-                Board.confirmBetBtn.setDisable(true);
-                Board.playerBetValue.setDisable(true);
+                Choice.userChoiceList.add('x');
             }
         });
-   }
+    }
 
-   public void clearData() {
+    private void onClickRestartButton(Button button) {
+        button.setOnAction(event -> {
+            restartGame();
+        });
+    }
+
+    public static void restartGame() {
+        Credits.setStartCreditsValue();
+        playerBet.setText("");
+        xButton.setDisable(false);
+        oButton.setDisable(false);
+        restartBtn.setDisable(true);
+        continueBtn.setDisable(true);
+        startLbl.setText("Start the game by click on the board or choose your figure:");
+        clearData();
+    }
+
+    public static void onClickContinueButton(Button button) {
+        button.setOnAction(event -> {
+            clearData();
+            setDisableForButtons();
+            continueBtn.setDisable(true);
+            startLbl.setText("Play again:");
+            char userFigure = Pane.checkUserFigureChoice();
+            if (userFigure == 'o') {
+                if(Board.playerBetValue.getText().isEmpty()) {
+                    Credits.makeNewBet(50);
+                    Move.computerMove('x');
+                } else {
+                    Move.computerMove('x');
+                }
+            }
+        });
+    }
+
+    private void onClickConfirmBetBtn(Button button) {
+        button.setOnAction(event -> {
+            int betValue = Integer.parseInt(playerBetValue.getText());
+            Credits.makeNewBet(betValue);
+            startLbl.setText("Play again:");
+            restartBtn.setDisable(false);
+        });
+    }
+
+    public static void setDisableForButtons() {
+        oButton.setDisable(true);
+        xButton.setDisable(true);
+    }
+
+   public static void clearData() {
         Move.ticTacToeArr = new char[3][3];
         Move.occupiedPanesPositionsList.clear();
         for (Pane pane : Pane.panesList) {
@@ -192,26 +236,52 @@ public class Board {
        }
    }
 
-    public static void endGame(char whoHasWon) {
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle("End of the game");
+    public static void endRound(char whoHasWon, int row) {
+        Alert gameStageAlert = new Alert(Alert.AlertType.INFORMATION);
+        gameStageAlert.setTitle("End of the round");
         String winner = "";
-        if(whoHasWon !='c') {
+
+        if(whoHasWon =='e') {
+            gameStageAlert.setContentText("Round over - nobody wins");
+            continueBtn.setDisable(false);
+            Credits.maxBet = Integer.parseInt(Board.playerBetValue.getText());
+            startLbl.setText("Play again to start with new credits value or continue");
+        } else {
             if (whoHasWon == 'x') {
                 winner = "Cross";
+                Board.printWinningLineOnBoard(row, 'x');
+                Credits.addWinnerCredits('x');
             } else {
                 winner = "Circle";
+                Board.printWinningLineOnBoard(row, 'o');
+                Credits.addWinnerCredits('o');
             }
-            alert.setContentText(winner + " has won the game");
-        } else {
-            alert.setContentText("Game over - nobody wins");
+
+            int currentComputerCredits = Integer.parseInt(computerCreditsValue.getText());
+            int currentPlayerCredits = Integer.parseInt(playerCreditsValue.getText());
+
+            if (currentComputerCredits > 0 && currentPlayerCredits > 0) {
+                startLbl.setText("Play again to start with new credits or continue");
+                gameStageAlert.setContentText(winner + " has won this round");
+                continueBtn.setDisable(false);
+            } else {
+                continueBtn.setDisable(true);
+                String looser = "";
+                if (currentComputerCredits > currentPlayerCredits) {
+                    looser =  "User";
+                    winner = "computer";
+                } else {
+                    looser =  "Computer";
+                    winner = "user";
+                }
+                gameStageAlert.setContentText(looser + " lost all credits, " + winner + " wins the game");
+            }
         }
-        alert.show();
+        gameStageAlert.show();
         restartBtn.setDisable(false);
-        startLbl.setText("Restart or choose your figure to play again");
     }
 
-    public static void printResultOnBoard(int position, char figure) {
+    public static void printWinningLineOnBoard(int position, char figure) {
         ImageView img1;
         ImageView img2;
         ImageView img3;
