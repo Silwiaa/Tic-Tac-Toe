@@ -44,8 +44,6 @@ public class Board {
             imageback, BackgroundRepeat.NO_REPEAT, BackgroundRepeat.NO_REPEAT, BackgroundPosition.CENTER, backgroundSize);
     private Background background = new Background(backgroundImage);
 
-    public static boolean gameStage = true;
-
     public BorderPane createBoard() {
 
         //Set font and other formatting for created grids
